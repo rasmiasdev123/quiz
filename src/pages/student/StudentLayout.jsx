@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores';
 import { ROUTES } from '../../utils/constants';
-import { LayoutDashboard, LogOut, Menu, X, BookOpen, History, Sparkles, User, Lock } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, X, BookOpen, History, Sparkles, User, Lock, Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 const menuItems = [
@@ -26,6 +26,13 @@ const menuItems = [
     path: ROUTES.STUDENT.HISTORY,
     color: 'from-emerald-500 to-teal-500',
     hoverColor: 'hover:from-emerald-600 hover:to-teal-600',
+  },
+  { 
+    icon: CalendarIcon, 
+    label: 'Revision Schedule', 
+    path: ROUTES.STUDENT.CALENDAR,
+    color: 'from-indigo-500 to-purple-500',
+    hoverColor: 'hover:from-indigo-600 hover:to-purple-600',
   },
   { 
     icon: Lock, 

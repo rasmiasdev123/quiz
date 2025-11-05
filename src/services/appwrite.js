@@ -34,6 +34,7 @@ export const COLLECTIONS = {
   QUESTIONS: 'questions',
   QUIZZES: 'quizzes',
   QUIZ_ATTEMPTS: 'quiz_attempts',
+  CALENDAR_NOTES: 'calendar_notes',
 };
 
 export default client;

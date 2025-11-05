@@ -27,12 +27,15 @@ function TopicForm() {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm({
     resolver: zodResolver(topicSchema),
     defaultValues: {
       order: 0,
     },
   });
+
+  const selectedBook = watch('book_id');
 
   useEffect(() => {
     loadBooks();
@@ -124,6 +127,7 @@ function TopicForm() {
             </label>
             <NativeSelect
               {...register('book_id')}
+              value={selectedBook}
               error={errors.book_id?.message}
               required
             >

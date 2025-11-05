@@ -50,6 +50,7 @@ export const ROUTES = {
     QUIZ_TAKING: '/student/quizzes/:quizId/take',
     QUIZ_RESULTS: '/student/quizzes/:quizId/results',
     HISTORY: '/student/history',
+    CALENDAR: '/student/calendar',
     CHANGE_PASSWORD: '/student/change-password',
   },
 };

@@ -38,6 +38,7 @@ import StudentQuizzes from './pages/student/Quizzes.jsx'
 import QuizTaking from './pages/student/QuizTaking.jsx'
 import QuizResults from './pages/student/QuizResults.jsx'
 import History from './pages/student/History.jsx'
+import StudentCalendar from './pages/student/Calendar.jsx'
 import ChangePassword from './pages/student/ChangePassword.jsx'
 
 function App() {
@@ -103,6 +104,7 @@ function App() {
           <Route path="quizzes" element={<StudentQuizzes />} />
           <Route path="quizzes/:quizId/results" element={<QuizResults />} />
           <Route path="history" element={<History />} />
+          <Route path="calendar" element={<StudentCalendar />} />
           <Route path="change-password" element={<ChangePassword />} />
         </Route>
         
