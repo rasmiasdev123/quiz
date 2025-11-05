@@ -238,20 +238,24 @@ export function parseTopicConfigs(topicConfigsStrings) {
  */
 export async function getQuizQuestions(topicConfigs) {
   try {
-    const { getQuestions } = await import('./questionService.js');
+    const { getQuestionsByTopic } = await import('./questionService.js');
     const allQuestions = [];
     
     for (const config of topicConfigs) {
       const { topic_id, selection_type, random_count } = config;
       
-      // Fetch all questions for this topic
-      const response = await getQuestions({ topicId: topic_id });
-      const topicQuestions = response?.documents || [];
-      
+      // Fetch all questions for this topic (no limit when selection_type is 'all')
+      let topicQuestions = [];
       if (selection_type === 'all') {
+        // Use getQuestionsByTopic which doesn't have a limit, or fetch with high limit
+        const response = await getQuestionsByTopic(topic_id);
+        topicQuestions = response?.documents || [];
         // Add all questions from this topic
         allQuestions.push(...topicQuestions);
       } else if (selection_type === 'random' && random_count) {
+        // For random selection, we can use pagination if needed, but try to get all first
+        const response = await getQuestionsByTopic(topic_id);
+        topicQuestions = response?.documents || [];
         // Randomly select questions (shuffle and take first N)
         if (topicQuestions.length <= random_count) {
           // If we have fewer questions than requested, use all

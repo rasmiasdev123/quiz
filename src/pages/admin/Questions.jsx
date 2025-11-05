@@ -56,6 +56,7 @@ function Questions() {
         topicId: selectedTopic || undefined,
         limit: QUESTIONS_PER_PAGE,
         offset: currentOffset,
+        searchTerm: searchTerm || undefined,
       });
       
       if (isInitial) {
@@ -75,20 +76,20 @@ function Questions() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [selectedBook, selectedTopic, showError]);
+  }, [selectedBook, selectedTopic, searchTerm, showError]);
 
   // Load filters (books and topics) when book changes or on mount
   useEffect(() => {
     loadFilters();
   }, [selectedBook]);
 
-  // Reset and load questions when filters change
+  // Reset and load questions when filters or search change
   useEffect(() => {
     setOffset(0);
     setQuestions([]);
     setHasMore(true);
     loadQuestions(0, true);
-  }, [selectedBook, selectedTopic, loadQuestions]);
+  }, [selectedBook, selectedTopic, searchTerm, loadQuestions]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -127,10 +128,13 @@ function Questions() {
     }
   };
 
-  // Client-side search filter (only filters already loaded questions)
-  const filteredQuestions = questions.filter((q) =>
-    q.question_text?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Client-side search filter (since fulltext index may not be available)
+  // If searchTerm is provided, filter questions on client side
+  const filteredQuestions = searchTerm && searchTerm.trim()
+    ? questions.filter((q) =>
+        q.question_text?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : questions;
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {

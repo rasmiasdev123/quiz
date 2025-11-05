@@ -57,19 +57,41 @@ export async function getQuestion(questionId) {
 }
 
 /**
- * Get questions by topic ID
+ * Get questions by topic ID (fetches ALL questions, no limit)
  * @param {string} topicId - Topic ID
- * @returns {Promise<Object>} - List of questions
+ * @returns {Promise<Object>} - List of questions with all documents
  */
 export async function getQuestionsByTopic(topicId) {
   try {
-    const response = await databases.listDocuments(
-      DATABASE_ID,
-      COLLECTIONS.QUESTIONS,
-      [Query.equal('topic_id', topicId)]
-    );
+    const allQuestions = [];
+    let offset = 0;
+    const limit = 100; // Appwrite max per query
+    let hasMore = true;
     
-    return response;
+    // Fetch all questions in batches to handle Appwrite's default limit
+    while (hasMore) {
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.QUESTIONS,
+        [
+          Query.equal('topic_id', topicId),
+          Query.limit(limit),
+          Query.offset(offset),
+        ]
+      );
+      
+      allQuestions.push(...(response?.documents || []));
+      
+      // Check if there are more questions to fetch
+      offset += limit;
+      hasMore = response?.documents?.length === limit && offset < (response?.total || 0);
+    }
+    
+    // Return in the same format as Appwrite's listDocuments response
+    return {
+      documents: allQuestions,
+      total: allQuestions.length,
+    };
   } catch (error) {
     console.error('Error fetching questions by topic:', error);
     throw error;

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:gh-pages": "tsc && vite build --base=/quiz/",
+    "build:gh-pages": "vite build --base=/quiz/",
     "preview": "vite preview",
     "deploy": "npm run build:gh-pages && gh-pages -d dist",
     "deploy:custom": "npm run build && gh-pages -d dist"

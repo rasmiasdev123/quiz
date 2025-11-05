@@ -94,11 +94,13 @@ function QuizForm() {
 
   const loadQuestionCounts = async () => {
     try {
+      const { getQuestionsByTopic } = await import('../../services/questionService');
       const counts = {};
       for (const topic of allTopics) {
         try {
-          const response = await getQuestions({ topicId: topic.$id });
-          counts[topic.$id] = response?.total || 0;
+          // Use getQuestionsByTopic to get ALL questions (no limit)
+          const response = await getQuestionsByTopic(topic.$id);
+          counts[topic.$id] = response?.documents?.length || response?.total || 0;
         } catch (error) {
           console.error(`Error loading questions for topic ${topic.$id}:`, error);
           counts[topic.$id] = 0;
@@ -212,10 +214,13 @@ function QuizForm() {
   const calculateTotalPoints = async (configs) => {
     let totalPoints = 0;
     
+    // Import getQuestionsByTopic to fetch ALL questions without limit
+    const { getQuestionsByTopic } = await import('../../services/questionService');
+    
     for (const config of configs) {
       try {
-        // Fetch questions for this topic
-        const response = await getQuestions({ topicId: config.topic_id });
+        // Fetch ALL questions for this topic (no limit)
+        const response = await getQuestionsByTopic(config.topic_id);
         const questions = response?.documents || [];
         
         if (config.selection_type === 'all') {

@@ -10,7 +10,7 @@ import { Query } from 'appwrite';
  */
 export async function getAdminQuestionsData(options = {}) {
   try {
-    const { bookId, topicId, limit = 15, offset = 0 } = options;
+    const { bookId, topicId, limit = 15, offset = 0, searchTerm } = options;
     
     const queries = [
       Query.limit(limit),
@@ -25,6 +25,10 @@ export async function getAdminQuestionsData(options = {}) {
     if (topicId) {
       queries.push(Query.equal('topic_id', topicId));
     }
+
+    // Note: Fulltext search requires a fulltext index in Appwrite
+    // For now, we'll filter on client-side after fetching
+    // If you want backend search, add a fulltext index on 'question_text' in Appwrite
 
     // Fetch questions
     const questionsRes = await databases.listDocuments(

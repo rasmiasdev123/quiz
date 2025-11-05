@@ -471,7 +471,12 @@ function QuizTaking() {
             {/* Question Grid */}
             <div className="grid grid-cols-5 gap-2 mb-6">
               {shuffledQuestions.map((q, index) => {
-                const hasAnswer = getAnswer(q.$id) !== null && getAnswer(q.$id) !== undefined;
+                const answer = getAnswer(q.$id);
+                // Check if answer is actually provided (not null, undefined, empty string, or empty array)
+                const hasAnswer = answer !== null && 
+                                  answer !== undefined && 
+                                  answer !== '' && 
+                                  (Array.isArray(answer) ? answer.length > 0 : true);
                 const isCurrent = index === currentQuestionIndex;
 
                 return (
