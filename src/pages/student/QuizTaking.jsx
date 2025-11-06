@@ -171,7 +171,15 @@ function QuizTaking() {
       // Create attempt only if we don't have one
       let attempt = currentAttempt;
       if (!attempt || attempt.quiz_id !== quizId || attempt.status !== 'in_progress') {
-        attempt = await createAttempt({ quiz_id: quizId }, user.$id);
+        // Store question IDs to track exact questions used (important for random mode)
+        const questionIds = quizQuestions.map(q => q.$id);
+        attempt = await createAttempt({ quiz_id: quizId, question_ids: questionIds }, user.$id);
+      } else if (attempt && !attempt.question_ids) {
+        // If attempt exists but doesn't have question_ids, update it
+        const questionIds = quizQuestions.map(q => q.$id);
+        const { updateAttempt } = await import('../../services/attemptService');
+        await updateAttempt(attempt.$id, { question_ids: questionIds });
+        attempt = { ...attempt, question_ids: questionIds };
       }
 
       // Start quiz with original questions (will be shuffled in useEffect)

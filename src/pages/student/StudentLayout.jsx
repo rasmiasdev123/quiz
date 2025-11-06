@@ -143,23 +143,8 @@ function StudentLayout() {
             })}
           </nav>
 
-          {/* User Info & Logout */}
-          <div className="p-4 border-t border-white/20 space-y-3">
-            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white/30">
-                  <User className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-white truncate">
-                    {userProfile?.name || user?.name || 'Student'}
-                  </p>
-                  <p className="text-xs text-white/80 truncate">
-                    {userProfile?.email || user?.email}
-                  </p>
-                </div>
-              </div>
-            </div>
+          {/* Logout */}
+          <div className="p-4 border-t border-white/20">
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 backdrop-blur-sm border border-red-400/30 text-white transition-all duration-200 font-semibold group"

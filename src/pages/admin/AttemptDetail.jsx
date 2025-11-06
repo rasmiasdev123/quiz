@@ -37,8 +37,15 @@ function AttemptDetail() {
       setQuiz(quizData);
       setUser(userData);
       
-      // Load questions for answer review
-      if (quizData?.topic_configs) {
+      // Load questions - use stored question_ids from attempt if available (for random mode)
+      // Otherwise, fetch questions from quiz config (for backward compatibility)
+      if (attemptData?.question_ids && Array.isArray(attemptData.question_ids) && attemptData.question_ids.length > 0) {
+        // Use exact questions that were shown during the attempt
+        const { getQuestionsByIds } = await import('../../services/questionService');
+        const quizQuestions = await getQuestionsByIds(attemptData.question_ids);
+        setQuestions(quizQuestions);
+      } else if (quizData?.topic_configs) {
+        // Fallback: Load questions from quiz config (for old attempts without question_ids)
         const parsedConfigs = parseTopicConfigs(quizData.topic_configs);
         const quizQuestions = await getQuizQuestions(parsedConfigs);
         setQuestions(quizQuestions);

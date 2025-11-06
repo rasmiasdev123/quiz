@@ -107,30 +107,38 @@ export async function getAttemptsByStudent(studentId) {
  * Create a new quiz attempt
  * @param {Object} attemptData - Attempt data
  * @param {string} attemptData.quiz_id - Quiz ID
+ * @param {Array<string>} attemptData.question_ids - Array of question IDs used in this attempt (optional)
  * @param {string} studentId - Student ID
  * @returns {Promise<Object>} - Created attempt
  */
 export async function createAttempt(attemptData, studentId) {
   try {
-    const { quiz_id } = attemptData;
+    const { quiz_id, question_ids } = attemptData;
     const now = new Date().toISOString();
+    
+    const attemptDataToStore = {
+      quiz_id,
+      student_id: studentId,
+      answers: [], // Appwrite expects an array, not a string
+      total_score: 0,
+      points_earned: 0, // Required attribute - will be updated on completion
+      total_points: 0, // Required attribute - will be updated on completion
+      percentage: '0', // Appwrite expects a string, not a number
+      started_at: now,
+      completed_at: now, // Set to current time initially, will be updated when completed
+      status: 'in_progress',
+    };
+    
+    // Store question IDs if provided (for random question mode to track exact questions used)
+    if (question_ids && Array.isArray(question_ids) && question_ids.length > 0) {
+      attemptDataToStore.question_ids = question_ids;
+    }
     
     const attempt = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.QUIZ_ATTEMPTS,
       ID.unique(),
-      {
-        quiz_id,
-        student_id: studentId,
-        answers: [], // Appwrite expects an array, not a string
-        total_score: 0,
-        points_earned: 0, // Required attribute - will be updated on completion
-        total_points: 0, // Required attribute - will be updated on completion
-        percentage: '0', // Appwrite expects a string, not a number
-        started_at: now,
-        completed_at: now, // Set to current time initially, will be updated when completed
-        status: 'in_progress',
-      }
+      attemptDataToStore
     );
     
     return attempt;
@@ -152,7 +160,7 @@ export async function createAttempt(attemptData, studentId) {
  */
 export async function updateAttempt(attemptId, attemptData) {
   try {
-    const { answers, total_score, points_earned, total_points, percentage, status } = attemptData;
+    const { answers, total_score, points_earned, total_points, percentage, status, question_ids } = attemptData;
     
     const updateData = {};
     
@@ -178,6 +186,10 @@ export async function updateAttempt(attemptId, attemptData) {
       if (status === 'completed') {
         updateData.completed_at = new Date().toISOString();
       }
+    }
+    // Store question IDs if provided (for random question mode to track exact questions used)
+    if (question_ids !== undefined && Array.isArray(question_ids) && question_ids.length > 0) {
+      updateData.question_ids = question_ids;
     }
     
     const attempt = await databases.updateDocument(

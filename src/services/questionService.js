@@ -57,6 +57,43 @@ export async function getQuestion(questionId) {
 }
 
 /**
+ * Get questions by their IDs
+ * @param {Array<string>} questionIds - Array of question IDs
+ * @returns {Promise<Array<Object>>} - Array of question documents
+ */
+export async function getQuestionsByIds(questionIds) {
+  try {
+    if (!Array.isArray(questionIds) || questionIds.length === 0) {
+      return [];
+    }
+    
+    // Fetch questions in parallel for better performance
+    const questionPromises = questionIds.map(questionId => 
+      getQuestion(questionId).catch(error => {
+        console.error(`Error fetching question ${questionId}:`, error);
+        return null; // Return null for failed fetches
+      })
+    );
+    
+    const questions = await Promise.all(questionPromises);
+    
+    // Filter out null values and maintain the order of questionIds
+    const questionMap = new Map(
+      questions
+        .filter(q => q !== null)
+        .map(q => [q.$id, q])
+    );
+    
+    return questionIds
+      .map(id => questionMap.get(id))
+      .filter(q => q !== undefined);
+  } catch (error) {
+    console.error('Error fetching questions by IDs:', error);
+    throw error;
+  }
+}
+
+/**
  * Get questions by topic ID (fetches ALL questions, no limit)
  * @param {string} topicId - Topic ID
  * @returns {Promise<Object>} - List of questions with all documents
