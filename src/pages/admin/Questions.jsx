@@ -128,13 +128,9 @@ function Questions() {
     }
   };
 
-  // Client-side search filter (since fulltext index may not be available)
-  // If searchTerm is provided, filter questions on client side
-  const filteredQuestions = searchTerm && searchTerm.trim()
-    ? questions.filter((q) =>
-        q.question_text?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : questions;
+  // Server-side search is now implemented, so use questions directly
+  // Search filtering is done on the server via Query.search()
+  const filteredQuestions = questions;
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {

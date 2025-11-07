@@ -26,9 +26,10 @@ export async function getAdminQuestionsData(options = {}) {
       queries.push(Query.equal('topic_id', topicId));
     }
 
-    // Note: Fulltext search requires a fulltext index in Appwrite
-    // For now, we'll filter on client-side after fetching
-    // If you want backend search, add a fulltext index on 'question_text' in Appwrite
+    // Server-side fulltext search (requires fulltext index on 'question_text' in Appwrite)
+    if (searchTerm && searchTerm.trim()) {
+      queries.push(Query.search('question_text', searchTerm.trim()));
+    }
 
     // Fetch questions
     const questionsRes = await databases.listDocuments(
