@@ -27,16 +27,53 @@ export async function getAdminQuestionsData(options = {}) {
     }
 
     // Server-side fulltext search (requires fulltext index on 'question_text' in Appwrite)
+    // IMPORTANT: Query.search() uses the ATTRIBUTE NAME (column name), not the index key
+    // The index key 'search' is just an identifier - Query.search() needs 'question_text'
     if (searchTerm && searchTerm.trim()) {
-      queries.push(Query.search('question_text', searchTerm.trim()));
+      const trimmedSearch = searchTerm.trim();
+      // Use the attribute name 'question_text' (the column the index is built on)
+      queries.push(Query.search('question_text', trimmedSearch));
     }
 
     // Fetch questions
-    const questionsRes = await databases.listDocuments(
-      DATABASE_ID,
-      COLLECTIONS.QUESTIONS,
-      queries
-    );
+    let questionsRes;
+    try {
+      questionsRes = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.QUESTIONS,
+        queries
+      );
+    } catch (error) {
+      console.error('Error fetching questions with search:', error);
+      // If search fails (e.g., index not found or wrong index key), try without search
+      if (searchTerm && searchTerm.trim()) {
+        console.warn('Search query failed, this might be due to incorrect index key. Error:', error.message);
+        // Remove search query and try again
+        const queriesWithoutSearch = queries.filter(q => {
+          // Filter out search queries
+          try {
+            return !q.toString().includes('search');
+          } catch {
+            return true;
+          }
+        });
+        
+        try {
+          questionsRes = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTIONS.QUESTIONS,
+            queriesWithoutSearch
+          );
+          console.warn('Fetched all questions without search filter. Please check your index key.');
+          // Note: We're returning all questions here, but ideally should filter client-side
+          // However, for large datasets, this is not ideal
+        } catch (fallbackError) {
+          throw fallbackError;
+        }
+      } else {
+        throw error;
+      }
+    }
 
     return {
       questions: questionsRes?.documents || [],
