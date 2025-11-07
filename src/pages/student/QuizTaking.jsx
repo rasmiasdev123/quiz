@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, ChevronLeft, ChevronRight, AlertCircle, Send, X } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight, AlertCircle, Send, X, List } from 'lucide-react';
 import { Button, Modal, Spinner } from '../../components/ui';
 import { ROUTES } from '../../utils/constants';
 import { getQuiz, getQuizQuestions, parseTopicConfigs } from '../../services/quizService';
@@ -85,6 +85,7 @@ function QuizTaking() {
   const [submitModal, setSubmitModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [shuffledQuestions, setShuffledQuestions] = useState([]);
+  const [showMobileNav, setShowMobileNav] = useState(false);
   const isLoadingRef = useRef(false);
 
   useEffect(() => {
@@ -329,30 +330,55 @@ function QuizTaking() {
   return (
     <div className="fixed inset-0 bg-gray-50 overflow-hidden z-50">
       {/* Top Bar */}
-      <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-        <button
-          onClick={handleExitQuiz}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
-          title="Exit Quiz"
-        >
-          <X className="w-5 h-5" />
-        </button>
-        <div className="text-sm text-gray-600">
+      <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExitQuiz}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+            title="Exit Quiz"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setShowMobileNav(!showMobileNav)}
+            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+            title="Question Navigation"
+          >
+            <List className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="text-sm text-gray-600 truncate flex-1 mx-2 text-center lg:text-left lg:flex-none">
           {currentQuiz.title}
         </div>
+        {/* Timer in mobile header */}
+        <div className={cn(
+          "lg:hidden flex items-center gap-1.5 px-2 py-1 rounded-md text-xs",
+          isLowTime ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-700"
+        )}>
+          <Clock className={cn("w-3.5 h-3.5", isLowTime && "animate-pulse")} />
+          <span className="font-medium">{getTimeRemainingFormatted()}</span>
+        </div>
       </div>
+
+      {/* Mobile Navigation Overlay */}
+      {showMobileNav && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setShowMobileNav(false)}
+        />
+      )}
 
       {/* Main Content - Two Column Layout */}
       <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
         {/* Left Panel - Quiz Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6">
           <div className="max-w-4xl mx-auto">
             {/* Quiz Card */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 relative">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-8 relative">
               {/* Quiz Title and Timer Row */}
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-4 gap-3">
                 <div className="flex-1">
-                  <h1 className="text-xl font-bold text-gray-900 mb-3">{currentQuiz.title}</h1>
+                  <h1 className="text-lg lg:text-xl font-bold text-gray-900 mb-3">{currentQuiz.title}</h1>
                   
                   {/* Progress Bar */}
                   <div className="mb-2">
@@ -370,9 +396,9 @@ function QuizTaking() {
                   </p>
                 </div>
 
-                {/* Timer */}
+                {/* Timer - Hidden on mobile (shown in header) */}
                 <div className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm",
+                  "hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-md text-sm",
                   isLowTime ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-700"
                 )}>
                   <Clock className={cn("w-4 h-4", isLowTime && "animate-pulse")} />
@@ -381,13 +407,13 @@ function QuizTaking() {
               </div>
 
               {/* Question Block */}
-              <div className="bg-white border border-gray-200 rounded-lg p-5 mb-6">
-                <h2 className="text-base font-semibold text-gray-900 mb-5">
+              <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5 mb-6">
+                <h2 className="text-sm lg:text-base font-semibold text-gray-900 mb-4 lg:mb-5">
                   {currentQuestion?.question_text}
                 </h2>
 
                 {/* Options */}
-                <div className="space-y-2.5">
+                <div className="space-y-2 lg:space-y-2.5">
                   {options.map((option, index) => {
                     const isSelected = selectedAnswer === index.toString();
 
@@ -395,7 +421,7 @@ function QuizTaking() {
                       <label
                         key={index}
                         className={cn(
-                          "flex items-center gap-3 p-3 border rounded-md cursor-pointer transition-all",
+                          "flex items-center gap-2 lg:gap-3 p-2.5 lg:p-3 border rounded-md cursor-pointer transition-all",
                           isSelected
                             ? "border-blue-500 bg-blue-50"
                             : "border-gray-200 bg-white hover:border-gray-300"
@@ -409,9 +435,9 @@ function QuizTaking() {
                             // Single choice - set only this option
                             setAnswer(currentQuestion.$id, isSelected ? null : index.toString());
                           }}
-                          className="w-4 h-4 text-blue-500 border-gray-300 focus:ring-blue-500"
+                          className="w-4 h-4 text-blue-500 border-gray-300 focus:ring-blue-500 flex-shrink-0"
                         />
-                        <span className="flex-1 text-gray-900 text-sm">
+                        <span className="flex-1 text-gray-900 text-xs lg:text-sm">
                           {option.text}
                         </span>
                       </label>
@@ -421,15 +447,16 @@ function QuizTaking() {
               </div>
 
               {/* Navigation Buttons */}
-              <div className="flex items-center justify-between mt-6">
+              <div className="flex items-center justify-between gap-2 mt-6">
                 <Button
                   variant="outline"
                   onClick={previousQuestion}
                   disabled={currentQuestionIndex === 0}
                   leftIcon={<ChevronLeft className="w-3.5 h-3.5" />}
-                  className="px-4 py-2 text-sm"
+                  className="px-3 lg:px-4 py-2 text-xs lg:text-sm flex-1 lg:flex-none"
                 >
-                  Previous
+                  <span className="hidden sm:inline">Previous</span>
+                  <span className="sm:hidden">Prev</span>
                 </Button>
 
                 {currentQuestionIndex < shuffledQuestions.length - 1 ? (
@@ -437,7 +464,7 @@ function QuizTaking() {
                     variant="primary"
                     onClick={nextQuestion}
                     rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
-                    className="px-4 py-2 text-sm"
+                    className="px-3 lg:px-4 py-2 text-xs lg:text-sm flex-1 lg:flex-none"
                   >
                     Next
                   </Button>
@@ -446,9 +473,10 @@ function QuizTaking() {
                     variant="primary"
                     onClick={handleSubmitClick}
                     leftIcon={<Send className="w-3.5 h-3.5" />}
-                    className="px-4 py-2 text-sm bg-green-600 hover:bg-green-700"
+                    className="px-3 lg:px-4 py-2 text-xs lg:text-sm bg-green-600 hover:bg-green-700 flex-1 lg:flex-none"
                   >
-                    Submit Quiz
+                    <span className="hidden sm:inline">Submit Quiz</span>
+                    <span className="sm:hidden">Submit</span>
                   </Button>
                 )}
               </div>
@@ -457,10 +485,23 @@ function QuizTaking() {
         </div>
 
         {/* Right Panel - Question Navigation */}
-        <div className="w-80 bg-white border-l border-gray-200 overflow-y-auto">
-          <div className="p-6">
-            {/* Header */}
-            <h3 className="text-base font-semibold text-gray-900 mb-4">Question Navigation</h3>
+        <div className={cn(
+          "fixed lg:relative inset-y-0 right-0 w-80 bg-white border-l border-gray-200 overflow-y-auto z-50 transform transition-transform duration-300 ease-in-out",
+          "lg:translate-x-0",
+          showMobileNav ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+        )}>
+          <div className="p-4 lg:p-6">
+            {/* Header with close button for mobile */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-gray-900">Question Navigation</h3>
+              <button
+                onClick={() => setShowMobileNav(false)}
+                className="lg:hidden p-1 hover:bg-gray-100 rounded transition-colors"
+                title="Close"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
             
             {/* Progress */}
             <div className="mb-5">
@@ -493,6 +534,7 @@ function QuizTaking() {
                     onClick={() => {
                       const { goToQuestion } = useQuizStore.getState();
                       goToQuestion(index);
+                      setShowMobileNav(false); // Close mobile nav when question is selected
                     }}
                     className={cn(
                       "w-10 h-10 rounded-md font-medium text-xs transition-all duration-200 border",
