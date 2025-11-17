@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, Trophy, TrendingUp, Award, ArrowRight, Clock } from 'lucide-react';
+import { BookOpen, Trophy, TrendingUp, Award, ArrowRight, Clock, CheckCircle2, Calendar } from 'lucide-react';
 import { Card, Spinner } from '../../components/ui';
 import { ROUTES } from '../../utils/constants';
 import { getStudentDashboardData } from '../../services/studentDashboardService';
+import { getPendingRevisionNotes } from '../../services/calendarNotesService';
 import { useAuthStore } from '../../stores';
 import { formatDate } from '../../utils/formatters';
 import { cn } from '../../lib/utils';
@@ -19,6 +20,7 @@ function StudentDashboard() {
     totalPoints: 0,
   });
   const [recentAttempts, setRecentAttempts] = useState([]);
+  const [revisionNotes, setRevisionNotes] = useState([]);
 
   const loadDashboardData = useCallback(async () => {
     if (!user?.$id) return;
@@ -26,11 +28,15 @@ function StudentDashboard() {
     try {
       setLoading(true);
       
-      // Single optimized call to get all dashboard data
+      // Load dashboard stats and recent attempts
       const { stats: dashboardStats, recentAttempts: attempts } = await getStudentDashboardData(user.$id);
+      
+      // Load pending revision notes
+      const notes = await getPendingRevisionNotes(user.$id, 5);
       
       setStats(dashboardStats);
       setRecentAttempts(attempts);
+      setRevisionNotes(notes);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -195,44 +201,91 @@ function StudentDashboard() {
           )}
         </Card>
 
-        {/* Quick Access */}
+        {/* Revision Pending */}
         <Card className="p-4 border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
-            <BookOpen className="w-5 h-5 text-gray-600" />
-            Quick Access
-          </h2>
-          <div className="space-y-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-orange-600" />
+              Revision Pending
+            </h2>
             <Link
-              to={ROUTES.STUDENT.QUIZZES}
-              className="block p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all"
+              to={ROUTES.STUDENT.CALENDAR}
+              className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-4 h-4 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900">Browse Quizzes</p>
-                  <p className="text-xs text-gray-600">Start a new quiz</p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-gray-400" />
-              </div>
-            </Link>
-            <Link
-              to={ROUTES.STUDENT.HISTORY}
-              className="block p-3 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                  <Trophy className="w-4 h-4 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900">View History</p>
-                  <p className="text-xs text-gray-600">See all attempts</p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-gray-400" />
-              </div>
+              View All
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
+          
+          {revisionNotes.length === 0 ? (
+            <div className="text-center py-8">
+              <CheckCircle2 className="w-10 h-10 mx-auto text-green-400 mb-2" />
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">All caught up!</h3>
+              <p className="text-xs text-gray-600">No pending revisions</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {revisionNotes.map((note) => {
+                const noteDate = new Date(note.note_date);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const isToday = noteDate.toDateString() === today.toDateString();
+                const daysAgo = Math.floor((today - noteDate) / (1000 * 60 * 60 * 24));
+                
+                const getNoteColorClass = (color) => {
+                  const colors = {
+                    blue: 'bg-blue-100 border-blue-300 text-blue-700',
+                    purple: 'bg-purple-100 border-purple-300 text-purple-700',
+                    pink: 'bg-pink-100 border-pink-300 text-pink-700',
+                    green: 'bg-green-100 border-green-300 text-green-700',
+                    orange: 'bg-orange-100 border-orange-300 text-orange-700',
+                    red: 'bg-red-100 border-red-300 text-red-700',
+                  };
+                  return colors[color] || colors.blue;
+                };
+
+                const getColorDot = (color) => {
+                  const colors = {
+                    blue: 'bg-blue-500',
+                    purple: 'bg-purple-500',
+                    pink: 'bg-pink-500',
+                    green: 'bg-green-500',
+                    orange: 'bg-orange-500',
+                    red: 'bg-red-500',
+                  };
+                  return colors[color] || colors.blue;
+                };
+                
+                return (
+                  <div
+                    key={note.$id}
+                    className={cn(
+                      'p-3 rounded-lg border-2 transition-all hover:shadow-md cursor-pointer',
+                      getNoteColorClass(note.color || 'blue')
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={cn('w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0', getColorDot(note.color || 'blue'))} />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-gray-900 truncate mb-0.5">
+                          {note.title || '(No title)'}
+                        </h3>
+                        {note.content && (
+                          <p className="text-xs text-gray-700 line-clamp-1 mb-1">
+                            {note.content}
+                          </p>
+                        )}
+                        <p className="text-xs font-medium text-gray-600">
+                          {isToday ? 'Today' : `${daysAgo} day${daysAgo !== 1 ? 's' : ''} ago`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
       </div>
     </div>

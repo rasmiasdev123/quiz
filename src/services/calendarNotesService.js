@@ -262,3 +262,38 @@ export async function deleteNote(noteId) {
   }
 }
 
+/**
+ * Get pending revision notes (today and previous dates)
+ * @param {string} userId - User ID
+ * @param {number} limit - Maximum number of notes to return (default: 5)
+ * @returns {Promise<Array>} - Array of pending revision notes
+ */
+export async function getPendingRevisionNotes(userId, limit = 5) {
+  try {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    
+    // Get today's date at midnight
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Get notes from today and earlier
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.CALENDAR_NOTES,
+      [
+        Query.equal('user_id', userId),
+        Query.lessThanEqual('note_date', today.toISOString()),
+        Query.orderDesc('note_date'),
+        Query.limit(limit),
+      ]
+    );
+    
+    return response.documents || [];
+  } catch (error) {
+    console.error('Error fetching pending revision notes:', error);
+    throw error;
+  }
+}
+

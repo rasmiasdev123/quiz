@@ -19,6 +19,7 @@ const NoteModal = ({
   onClose, 
   note, 
   selectedDate, 
+  calendarDate,
   dateNotes = null, // All notes for the selected date
   onSave, 
   onDelete, 
@@ -70,6 +71,9 @@ const NoteModal = ({
       return;
     }
 
+    // When editing, use the note's date. When creating, use selectedDate (which is the clicked date)
+    // If selectedDate is from a different month than calendarDate, use selectedDate anyway
+    // since that's the date the user clicked on
     const noteData = {
       title: title.trim(),
       content: content.trim(),

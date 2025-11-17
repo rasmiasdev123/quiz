@@ -335,20 +335,22 @@ function StudentCalendar() {
               <button
                 onClick={() => {
                   const newDate = new Date(calendarDate);
-                  newDate.setMonth(newDate.getMonth() - 1);
+                  newDate.setFullYear(newDate.getFullYear() - 1);
                   setCalendarDate(newDate);
                 }}
                 className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title="Previous year"
               >
                 <ChevronLeft className="w-5 h-5 text-gray-600" />
               </button>
               <button
                 onClick={() => {
                   const newDate = new Date(calendarDate);
-                  newDate.setMonth(newDate.getMonth() + 1);
+                  newDate.setFullYear(newDate.getFullYear() + 1);
                   setCalendarDate(newDate);
                 }}
                 className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title="Next year"
               >
                 <ChevronRight className="w-5 h-5 text-gray-600" />
               </button>
@@ -387,6 +389,7 @@ function StudentCalendar() {
               <Calendar
                 onChange={handleDateClick}
                 value={selectedDate}
+                activeStartDate={calendarDate}
                 onActiveStartDateChange={({ activeStartDate }) => {
                   if (activeStartDate) {
                     handleMonthChange(activeStartDate);
@@ -458,6 +461,7 @@ function StudentCalendar() {
         }}
         note={selectedNote}
         selectedDate={selectedDate}
+        calendarDate={calendarDate}
         dateNotes={selectedNote ? null : getNotesForDate(selectedDate)}
         onSave={handleSave}
         onDelete={handleDelete}

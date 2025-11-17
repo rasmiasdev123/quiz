@@ -288,7 +288,7 @@ const NativeSelect = forwardRef(({
         {isOpen && createPortal(
           <div
             ref={dropdownRef}
-            className="fixed z-[9999] bg-white border border-gray-200 rounded-xl shadow-2xl max-h-60 overflow-hidden custom-scrollbar"
+            className="fixed z-[9999] bg-white border border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto custom-scrollbar"
             style={{
               top: `${dropdownPosition.top}px`,
               left: `${dropdownPosition.left}px`,
@@ -316,9 +316,7 @@ const NativeSelect = forwardRef(({
                         'hover:bg-indigo-50 hover:text-indigo-700',
                         isSelected 
                           ? 'bg-indigo-50 text-indigo-700 font-medium' 
-                          : 'text-gray-700',
-                        index === 0 && 'rounded-t-lg',
-                        index === options.length - 1 && 'rounded-b-lg'
+                          : 'text-gray-700'
                       )}
                     >
                       <span className="flex-1">{option.label}</span>
