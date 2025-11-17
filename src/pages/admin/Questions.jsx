@@ -128,9 +128,16 @@ function Questions() {
     }
   };
 
-  // Server-side search is now implemented, so use questions directly
-  // Search filtering is done on the server via Query.search()
-  const filteredQuestions = questions;
+  // Server-side fulltext search + client-side exact/partial matching
+  // Fulltext search matches any word, so we add client-side filtering for better precision
+  const filteredQuestions = searchTerm && searchTerm.trim()
+    ? questions.filter((q) => {
+        const searchLower = searchTerm.toLowerCase().trim();
+        const questionText = q.question_text?.toLowerCase() || '';
+        // Check if the search term appears in the question (case-insensitive)
+        return questionText.includes(searchLower);
+      })
+    : questions;
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
